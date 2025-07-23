@@ -27,13 +27,13 @@ spring:
                 - D:\project\spring-ai-demo\report-mcp\target\report-mcp-1.0-SNAPSHOT-jar-with-dependencies.jar
                 - --mode=stdio
               env:
-                PROJECT_PATH: D:/project/ccts-back
+                PROJECT_PATH: D:/project/
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://rm-uf6xqh51yf05318424o.mysql.rds.aliyuncs.com:3306/ccts-dev?allowMultiQueries=true&rewriteBatchedStatements=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/test?allowMultiQueries=true&rewriteBatchedStatements=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
-    password: Ccts!@#123
+    password: 123456
   # JPA配置
   jpa:
     hibernate:
@@ -48,7 +48,7 @@ spring:
 # OpenRouter API配置
 openrouter:
   api:
-    key: "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"
+    key: ${OPENROUTER_API_KEY}
     base-url: https://openrouter.ai/api
     #model: tngtech/deepseek-r1t2-chimera:free
     #model: deepseek/deepseek-r1-0528-qwen3-8b:free
@@ -83,7 +83,7 @@ logging:
 # 应用配置
 app:
   git:
-    repository-path: D:/project/ccts-back  # Git仓库路径，可通过环境变量设置
+    repository-path: D:/project/  # Git仓库路径，可通过环境变量设置
   daily-report:
     default-days: 5  # 默认查询天数
     cache-hours: 24  # 缓存时间（小时）
