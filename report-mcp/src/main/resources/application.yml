@@ -1,0 +1,13 @@
+spring:
+  main:
+    web-application-type: none
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: report-server
+        version: 1.0.0
+
+logging:
+  level:
+    root: OFF
