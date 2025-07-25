@@ -4,18 +4,21 @@ server:
 spring:
   application:
     name: spring-ai-mcp-demo
+  redis:
+    host: localhost
+    port: 6379
   ai:
     openai:
-      api-key: ${openrouter.api.key}
-      base-url: ${openrouter.api.base-url}
+      api-key: ${alibaba.api.key}
+      base-url: ${alibaba.api.base-url}
       chat:
         options:
-          model: ${openrouter.api.model}
+          model: ${alibaba.api.model}
     mcp:
       client:
+        enabled: true
         name: mcp-client
         version: 1.0.0
-        enabled: true
         request-timeout: 10s
         type: SYNC
         stdio:
@@ -24,25 +27,9 @@ spring:
               command: java
               args:
                 - -jar
-                - D:\project\spring-ai-demo\report-mcp\target\report-mcp-1.0-SNAPSHOT-jar-with-dependencies.jar
-                - --mode=stdio
+                - "D:/project/spring-ai-demo/report-mcp/target/report-mcp-1.0-SNAPSHOT.jar"
               env:
-                PROJECT_PATH: D:/project/
-  # 数据库配置
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/test?allowMultiQueries=true&rewriteBatchedStatements=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-    username: root
-    password: 123456
-  # JPA配置
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
+                PROJECT_PATH: D:/project/ccts-back
 
 
 # OpenRouter API配置
@@ -68,7 +55,8 @@ alibaba:
   api:
     key: ${QWEN_API_KEY}
     base-url: https://dashscope.aliyuncs.com/compatible-mode
-    model: qwen-plus
+    #model: qwen-plus
+    model: qwen-max
 
 logging:
   level:
@@ -83,7 +71,7 @@ logging:
 # 应用配置
 app:
   git:
-    repository-path: D:/project/  # Git仓库路径，可通过环境变量设置
+    repository-path: D:/project/ccts-back  # Git仓库路径，可通过环境变量设置
   daily-report:
     default-days: 5  # 默认查询天数
     cache-hours: 24  # 缓存时间（小时）

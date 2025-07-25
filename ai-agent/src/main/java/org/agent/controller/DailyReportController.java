@@ -10,8 +10,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +39,9 @@ public class DailyReportController {
     @Value("${app.git.repository-path:}")
     private String defaultRepositoryPath;
 
-    private ChatClient chatClient;
+    private static final String TODAY = "midnight";
+
+    private final ChatClient chatClient;
 
     private DailyReportController(ChatClient.Builder builder){
         this.chatClient=builder.defaultSystem("""
@@ -52,16 +52,11 @@ public class DailyReportController {
      * 生成日报
      */
     @PostMapping("/generate")
-    public String generateReport(
-            @RequestParam(required = false) String date,
-            @RequestParam(required = false) String repoPath,
-            @RequestParam(required = false) String focusArea) {
+    public String generateReport() {
         
         try {
-            logger.info("收到日报生成请求，日期：{}，仓库路径：{}，关注领域：{}", date, repoPath, focusArea);
-
-            // 使用智能RAG生成日报
-            String commitsJson = JSONObject.toJSONString(dailyReportService.getDailyCommits(null));
+            //传yyyy-MM-dd的话会因为时区差异反而查不到当天的记录
+            String commitsJson = JSONObject.toJSONString(dailyReportService.getDailyCommits(TODAY));
             String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
             String prompt = String.format("""
@@ -95,35 +90,79 @@ public class DailyReportController {
             return "生成日报时发生错误：" + e.getMessage();
         }
     }
+
+    @PostMapping("/generateWeek")
+    public String generateWeekReport() {
+
+        try {
+
+            String commitsJson = JSONObject.toJSONString(dailyReportService.getDailyCommits("5 days ago"));
+            String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+            String prompt = String.format("""
+            请基于以下Git提交记录生成一份工作日报：
+
+            日期：%s
+            提交记录：
+            %s
+
+            请按以下格式生成日报：
+            ### 本周工作总结
+            
+            1.
+            2.
+            3.
+            
+            #### 存在问题
+            
+            1.
+            2.
+            3.
+            
+            ### 下周工作计划
+            
+            1.
+            2.
+            3.
+
+            要求：
+            1. 内容要专业、简洁
+            2. 使用中文
+            3. 格式清晰易读
+            4. 相同taskId的内容尽可能合并
+            5. 每个模块不要超过5条记录
+            6. 适当润色,不要在功能上画蛇添足
+            """, dateStr, commitsJson);
+
+            return chatClient.prompt()
+                    .user(prompt)
+                    .call()
+                    .content();
+
+        } catch (Exception e) {
+            logger.error("生成周报失败", e);
+            return "生成周报时发生错误：" + e.getMessage();
+        }
+    }
     
     /**
      * 获取Git提交记录
      */
     @GetMapping("/commits")
-    public ResponseEntity<Map<String, Object>> getCommits(
-            @RequestParam(required = false) String date,
-            @RequestParam(required = false) String repoPath) {
+    public ResponseEntity<Map<String, Object>> getCommits() {
         
         Map<String, Object> response = new HashMap<>();
         
         try {
-            LocalDate targetDate = date != null ? 
-                LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd")) : 
-                LocalDate.now();
-            
-            String actualRepoPath = repoPath != null ? repoPath : defaultRepositoryPath;
-            if (actualRepoPath == null || actualRepoPath.trim().isEmpty()) {
-                actualRepoPath = System.getProperty("user.dir");
-            }
             
             List<GitCommitService.CommitInfo> commits = 
-                gitCommitService.getCommitsByDate(actualRepoPath, targetDate);
+                gitCommitService.getCommitsByDate(defaultRepositoryPath, TODAY);
             
             response.put("success", true);
             response.put("commits", commits);
             response.put("count", commits.size());
             response.put("statistics", gitCommitService.getCommitStatistics(commits));
-            response.put("date", targetDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            response.put("date", TODAY);
             
         } catch (Exception e) {
             logger.error("获取提交记录失败", e);

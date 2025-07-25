@@ -5,9 +5,12 @@ spring:
   ai:
     mcp:
       server:
+        enabled: true
         name: report-server
         version: 1.0.0
+        stdio: true
+        type: SYNC
 
 logging:
-  level:
-    root: OFF
+  pattern:
+    console:

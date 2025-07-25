@@ -30,14 +30,12 @@ public class DailyReportService {
      * @param date 日期，格式：yyyy-MM-dd，不传则默认今天
      * @return JSON格式的提交记录
      */
-    @Tool(name = "getDailyCommits",description = "get git commit messages start at midnight of the day")
-    public String getDailyCommits(@ToolParam(description = "search date,default today",required = false) String date) {
+    @Tool(name = "getGitCommits",description = "get git commit messages")
+    public String getGitCommits(@ToolParam(description = "--since=date,default midnight(format: 3 days ago)") String date) {
         try {
-            LocalDate targetDate = date != null ?
-                LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd")) :
-                LocalDate.now();
+
             String repositoryPath = System.getenv("PROJECT_PATH");
-            List<GitCommitService.CommitInfo> commits = gitCommitService.getCommitsByDate(repositoryPath, targetDate);
+            List<GitCommitService.CommitInfo> commits = gitCommitService.getCommitsByDate(repositoryPath, date);
             return JSONObject.toJSONString(commits);
 
         } catch (Exception e) {

@@ -9,8 +9,6 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -32,14 +30,9 @@ public class DailyReportService {
 
     @Tool(name = "getDailyCommits", description = "获取指定日期的Git提交记录")
     public String getDailyCommits(
-            @ToolParam(description = "日期，格式：yyyy-MM-dd，不传则默认今天") String date) {
-
+            @ToolParam(description = "GIT日期格式,如：n days ago，不传则默认midnight") String date) {
         try {
-            LocalDate targetDate = date != null ?
-                LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd")) :
-                LocalDate.now();
-
-            List<GitCommitService.CommitInfo> commits = gitCommitService.getCommitsByDate(repositoryPath, targetDate);
+            List<GitCommitService.CommitInfo> commits = gitCommitService.getCommitsByDate(repositoryPath, date);
             return JSONObject.toJSONString(commits);
 
         } catch (Exception e) {

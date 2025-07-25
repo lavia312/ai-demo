@@ -43,7 +43,7 @@ public class WebController {
      * 日报生成页面
      * @return 日报页面
      */
-    @GetMapping("/daily-report")
+    @GetMapping("/report")
     public String dailyReport() {
         return "daily-report";
     }

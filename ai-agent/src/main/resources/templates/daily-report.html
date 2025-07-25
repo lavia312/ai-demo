@@ -205,15 +205,12 @@
                     
                     <div class="form-group">
                         <label for="repoPath">Git仓库路径 (可选，默认当前目录):</label>
-                        <input type="text" id="repoPath" name="repoPath" placeholder="例如: D:/project/my-project">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="focusArea">关注领域 (可选，用于智能分析):</label>
-                        <input type="text" id="focusArea" name="focusArea" placeholder="例如: 用户模块, 性能优化, bug修复">
+                        <input type="text" id="repoPath" name="repoPath" placeholder="例如: D:/project/my-project"
+                               value="D:/project/ccts-back">
                     </div>
                     
                     <button type="submit" class="btn" id="generateBtn">🚀 生成日报</button>
+                    <button type="submit" class="btn" id="generateWeekBtn">🚀 生成周报</button>
                     <button type="button" class="btn" id="getCommitsBtn">📊 查看提交记录</button>
                 </form>
             </div>
@@ -230,6 +227,7 @@
     <script>
         const resultContent = document.getElementById('resultContent');
         const generateBtn = document.getElementById('generateBtn');
+        const generateWeekBtn = document.getElementById('generateWeekBtn');
         const getCommitsBtn = document.getElementById('getCommitsBtn');
         const indexBtn = document.getElementById('indexBtn');
 
@@ -242,8 +240,7 @@
             
             if (formData.get('date')) params.append('date', formData.get('date'));
             if (formData.get('repoPath')) params.append('repoPath', formData.get('repoPath'));
-            if (formData.get('focusArea')) params.append('focusArea', formData.get('focusArea'));
-            
+
             showLoading('正在生成日报...');
             generateBtn.disabled = true;
             
@@ -258,6 +255,32 @@
                 showError('请求失败: ' + error);
             } finally {
                 generateBtn.disabled = false;
+            }
+        });
+
+        // 生成周报
+        generateWeekBtn.addEventListener('click', async () => {
+            const date = document.getElementById('date').value;
+            const repoPath = document.getElementById('repoPath').value;
+
+            const params = new URLSearchParams();
+            if (date) params.append('date', date);
+            if (repoPath) params.append('repoPath', repoPath);
+
+            showLoading('正在生成周报...');
+            generateWeekBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/daily-report/generateWeek?${params}`, {
+                    method: 'POST'
+                });
+
+                const data = await response.text();
+                showResult(data, 'success');
+            } catch (error) {
+                showError('请求失败: ' + error);
+            } finally {
+                generateWeekBtn.disabled = false;
             }
         });
 

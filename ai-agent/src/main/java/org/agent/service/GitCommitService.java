@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class GitCommitService {
     /**
      * 获取指定日期的Git提交记录
      */
-    public List<CommitInfo> getCommitsByDate(String repositoryPath, LocalDate date) {
+    public List<CommitInfo> getCommitsByDate(String repositoryPath, String date) {
         List<CommitInfo> commits = new ArrayList<>();
         
         try {
@@ -44,8 +45,8 @@ public class GitCommitService {
             // 构建Git命令
             String[] command = {
                 "git", "log",
-                "--since=midnight" ,
-                "--pretty=format:%s"
+                "--since="+date ,
+                "--pretty=format:%an %s"  //作者 提交信息
             };
             
             logger.info("执行Git命令：{}", String.join(" ", command));
@@ -99,16 +100,17 @@ public class GitCommitService {
             if (line.isEmpty()) {
                 continue;
             }
-            // task #II4B 调整日志,事务
+            //dongjiawei task #II4B 调整日志,事务
             String[] commitInfo = line.split("\\s+");
-            String taskId = commitInfo[1];
+            String author = commitInfo[0];
+            String taskId = commitInfo[2];
             // 过滤调合并等一些非业务记录
-            if(!taskId.startsWith("#")){
+            if(!taskId.startsWith("#") || !author.equals("dongjiawei")){
                 continue;
             }
-            String message = commitInfo[2];
-            if (commitInfo.length>3){
-                for(int i=3;i<commitInfo.length;i++){
+            String message = commitInfo[3];
+            if (commitInfo.length>4){
+                for(int i=4;i<commitInfo.length;i++){
                     message+=" "+commitInfo[i];
                 }
             }
@@ -127,7 +129,7 @@ public class GitCommitService {
         
         for (int i = 0; i < days; i++) {
             LocalDate date = endDate.minusDays(i);
-            List<CommitInfo> dayCommits = getCommitsByDate(repositoryPath, date);
+            List<CommitInfo> dayCommits = getCommitsByDate(repositoryPath, date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             allCommits.addAll(dayCommits);
         }
         
