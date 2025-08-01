@@ -1,0 +1,50 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: langchain4j-demo
+  redis:
+    host: localhost
+    port: 6379
+
+langchain4j:
+  community:
+    dashscope:
+      chat-model:
+        model-name: ${alibaba.api.model}
+        api-key: ${alibaba.api.key}
+      streaming-chat-model:
+        model-name: ${alibaba.api.model}
+        api-key: ${alibaba.api.key}
+      embedding-model:
+        model-name: text-embedding-v4
+        api-key: ${alibaba.api.key}
+
+
+# 阿里百炼平台
+alibaba:
+  api:
+    key: ${QWEN_API_KEY}
+    base-url: https://dashscope.aliyuncs.com/compatible-mode
+    model: qwen3-coder-480b-a35b-instruct
+    #model: qwen-max
+
+logging:
+  level:
+    org.agent: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.data.jpa: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 应用配置
+app:
+  git:
+    repository-path: D:/project/ccts-back  # Git仓库路径，可通过环境变量设置
+  daily-report:
+    default-days: 5  # 默认查询天数
+    cache-hours: 24  # 缓存时间（小时）
+

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流式响应测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .response {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            min-height: 100px;
+        }
+        .status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>流式响应测试页面</h1>
+    
+    <div class="container">
+        <h2>测试流式聊天接口</h2>
+        <div class="input-group">
+            <input type="text" id="messageInput" placeholder="输入测试消息..." value="你好，请介绍一下自己">
+            <button id="sendButton" onclick="testStream()">发送测试</button>
+        </div>
+        <div class="status" id="status">准备就绪</div>
+        <div class="response" id="response">响应内容将在这里显示...</div>
+    </div>
+
+    <script>
+        async function testStream() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const statusDiv = document.getElementById('status');
+            const responseDiv = document.getElementById('response');
+            
+            const message = messageInput.value.trim();
+            if (!message) {
+                alert('请输入测试消息');
+                return;
+            }
+            
+            sendButton.disabled = true;
+            statusDiv.textContent = '正在发送请求...';
+            statusDiv.className = 'status';
+            responseDiv.textContent = '';
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: message
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                statusDiv.textContent = '正在接收流式响应...';
+                statusDiv.className = 'status success';
+                
+                // 处理流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullResponse = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value, { stream: true });
+                    fullResponse += chunk;
+                    responseDiv.textContent = fullResponse;
+                }
+                
+                statusDiv.textContent = '响应完成';
+                statusDiv.className = 'status success';
+                
+            } catch (error) {
+                console.error('请求失败:', error);
+                statusDiv.textContent = '请求失败: ' + error.message;
+                statusDiv.className = 'status error';
+                responseDiv.textContent = '错误: ' + error.message;
+            } finally {
+                sendButton.disabled = false;
+            }
+        }
+        
+        // 回车键发送
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                testStream();
+            }
+        });
+    </script>
+</body>
+</html>
