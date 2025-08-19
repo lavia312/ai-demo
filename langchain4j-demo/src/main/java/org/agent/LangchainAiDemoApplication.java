@@ -14,7 +14,7 @@ public class LangchainAiDemoApplication {
     public static void main(String[] args) {
         SpringApplication.run(LangchainAiDemoApplication.class, args);
         System.out.println("=================================================");
-        System.out.println("Spring AI MCP Demo 启动成功！");
+        System.out.println("Langchain4j AI Demo 启动成功！");
         System.out.println("聊天地址: http://localhost:8081");
         System.out.println("日报地址: http://localhost:8081/report");
         System.out.println("=================================================");

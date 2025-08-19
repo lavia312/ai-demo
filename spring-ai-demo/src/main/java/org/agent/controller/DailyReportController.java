@@ -128,10 +128,9 @@ public class DailyReportController {
             要求：
             1. 内容要专业、简洁
             2. 使用中文
-            3. 格式清晰易读
-            4. 相同taskId的内容尽可能合并
-            5. 每个模块不要超过5条记录
-            6. 适当润色,不要在功能上画蛇添足
+            3. 格式清晰易读,能让不懂技术的人也能看懂
+            4. 类似的功能尽可能合并,每个模块不要超过5条记录
+            5. 适当润色,不要在功能上画蛇添足
             """, dateStr, commitsJson);
 
             return chatClient.prompt()
